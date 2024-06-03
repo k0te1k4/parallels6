@@ -1,0 +1,29 @@
+CC=pgcc
+CXX=pgc++
+FC=pgfortran
+LD=pgc++
+CFLAGS=-fast -acc -ta=multicore
+FFLAGS=-fast -acc -ta=multicore
+CXXFLAGS=-fast -acc -ta=multicore
+LDFLAGS=-fast -acc -ta=multicore
+LDLIBS += -lboost_program_options
+NVTXLIB := -I/home/e.romanchenko/NVTX/c/include/
+
+all: exe run
+
+exe: multithread.o
+	$(LD) $(LDFLAGS) $(LDLIBS) -o $@ $^ ${NVTXLIB} ${boot}
+
+run: exe
+	./exe --precision=0.000001 --size=4096 --iter=1000
+
+.PHONY: clean
+clean:
+	-rm -f *.o *.mod core exe
+.SUFFIXES: .c .cpp .F90 .o
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -c -o $@ $< ${NVTXLIB} ${boot}
+.c.o:
+	$(CC) $(CFLAGS) -c -o $@ $< ${NVTXLIB} ${boot}
+.F90.o:
+	$(FC) $(FFLAGS) -c -o $@ $< ${NVTXLIB} ${boot} 

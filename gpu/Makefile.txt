@@ -1,0 +1,29 @@
+CC=pgcc
+CXX=pgc++
+FC=pgfortran
+LD=pgc++
+CFLAGS=-fast -acc -ta=tesla:managed
+FFLAGS=-fast -acc -ta=tesla:managed
+CXXFLAGS=-fast -acc -ta=tesla:managed
+LDFLAGS=-fast -acc -ta=tesla:managed
+LDLIBS += -lboost_program_options
+NVTXLIB := -I/opt/nvidia/hpc_sdk/Linux_x86_64/20.9/cuda/11.0/include
+
+all: exe run
+
+exe: gpu.o
+	$(LD) $(LDFLAGS) $(LDLIBS) -o $@ $^ ${NVTXLIB} ${boot}
+
+run: exe
+	./exe --precision=0.000001 --size=4096 --iter=1000
+
+.PHONY: clean
+clean:
+	-rm -f *.o *.mod core exe
+.SUFFIXES: .c .cpp .F90 .o
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -c -o $@ $< ${NVTXLIB}
+.c.o:
+	$(CC) $(CFLAGS) -c -o $@ $< ${NVTXLIB}
+.F90.o:
+	$(FC) $(FFLAGS) -c -o $@ $< ${NVTXLIB}
